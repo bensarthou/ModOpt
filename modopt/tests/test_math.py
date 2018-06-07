@@ -259,3 +259,97 @@ class StatsTestCase(TestCase):
         npt.assert_almost_equal(stats.sigma_mad(self.data1),
                                 2.9651999999999998,
                                 err_msg='Incorrect sigma from MAD')
+
+
+class MetricTestCase(TestCase):
+
+    def setUp(self):
+
+        self.data1 = np.arange(25).reshape(5, 5)
+        self.data2 = np.arange(49).reshape(7, 7)
+        copy = np.copy(self.data2)
+        copy[0, 2] = 0.0
+        self.data3 = copy
+        self.mask = np.ones((5, 5))
+
+    def tearDown(self):
+
+        self.data1 = None
+        self.data2 = None
+        self.data3 = None
+        self.mask = None
+
+    def test_crop(self):
+
+        npt.assert_equal(metrics.crop(self.data1, ((1, 1), (2, 2))),
+                         np.array([[7], [12], [17]]),
+                         err_msg='Incorrect crop')
+
+    def test_min_max_normalize(self):
+        npt.assert_almost_equal(metrics.min_max_normalize(self.data1),
+                                np.array([[0., 0.04166667, 0.08333333, 0.125,
+                                           0.16666667],
+                                          [0.20833333, 0.25, 0.29166667,
+                                           0.33333333, 0.375],
+                                          [0.41666667, 0.45833333, 0.5,
+                                           0.54166667, 0.58333333],
+                                          [0.625, 0.66666667, 0.70833333,
+                                           0.75, 0.79166667],
+                                          [0.83333333, 0.875, 0.91666667,
+                                           0.95833333, 1.]]))
+
+    def test_compare_ssim(self):
+        npt.assert_equal(metrics._compare_ssim(self.data2, self.data3),
+                         1.0,
+                         err_msg='Incorrect SSIM in _compare_ssim')
+
+    def test_snr(self):
+        npt.assert_almost_equal(metrics.snr(self.data2, self.data3),
+                                39.779978099587396,
+                                err_msg='Incorrect snr')
+
+    def test_psnr(self):
+        npt.assert_almost_equal(metrics.psnr(self.data2, self.data3),
+                                44.50618563451726,
+                                err_msg='Incorrect psnr')
+
+    def test_mse(self):
+        npt.assert_almost_equal(metrics.mse(self.data2, self.data3),
+                                3.5430839002267575e-05,
+                                err_msg='Incorrect mse')
+
+    def test_nrmse(self):
+        npt.assert_almost_equal(metrics.nrmse(self.data2, self.data3),
+                                0.010256545123110545,
+                                err_msg='Incorrect nrmse')
+
+    def test_preprocess_input(self):
+        npt.assert_almost_equal(np.array(metrics._preprocess_input(self.data1,
+                                                                   self.data1,
+                                                                   self.mask)),
+                                (np.array([[0., 0.04166667, 0.08333333,
+                                            0.125, 0.16666667],
+                                           [0.20833333, 0.25, 0.29166667,
+                                            0.33333333, 0.375],
+                                           [0.41666667, 0.45833333, 0.5,
+                                            0.54166667, 0.58333333],
+                                           [0.625, 0.66666667, 0.70833333,
+                                            0.75, 0.79166667],
+                                           [0.83333333, 0.875, 0.91666667,
+                                            0.95833333, 1.]]),
+                                 np.array([[0., 0.04166667, 0.08333333,
+                                            0.125, 0.16666667],
+                                           [0.20833333, 0.25, 0.29166667,
+                                            0.33333333, 0.375],
+                                           [0.41666667, 0.45833333, 0.5,
+                                            0.54166667, 0.58333333],
+                                           [0.625, 0.66666667, 0.70833333,
+                                            0.75, 0.79166667],
+                                           [0.83333333, 0.875, 0.91666667,
+                                            0.95833333, 1.]]),
+                                 np.array([[1., 1., 1., 1., 1.],
+                                          [1., 1., 1., 1., 1.],
+                                          [1., 1., 1., 1., 1.],
+                                          [1., 1., 1., 1., 1.],
+                                          [1., 1., 1., 1., 1.]])),
+                                err_msg='_preprocess_input')
