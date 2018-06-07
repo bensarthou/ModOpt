@@ -271,7 +271,13 @@ def min_max_normalize(img):
     """
     min_img = img.min()
     max_img = img.max()
-    return (img - min_img) / (max_img - min_img)
+    if max_img == min_img:
+        if max_img == 0.0:
+            return img
+        else:
+            return (img - min_img) / (max_img)
+    else:
+        return (img - min_img) / (max_img - min_img)
 
 
 def _preprocess_input(test, ref, mask=None):
@@ -305,7 +311,7 @@ def _preprocess_input(test, ref, mask=None):
     return test, ref, mask
 
 
-def ssim(test, ref, mask):
+def ssim(test, ref, mask=None):
     """ Return SSIM
 
     Parameters:
